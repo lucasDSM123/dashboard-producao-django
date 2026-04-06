@@ -1,0 +1,16 @@
+# Ambientes Virtuais
+.venv/
+venv/
+env/
+
+# Django e Banco de Dados
+db.sqlite3
+*.sqlite3
+
+# Pastas de Cache do Python
+**/__pycache__/
+*.pyc
+
+# Arquivos de Sistema e Planilhas locais
+.vscode/
+prod.xlsx
