@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Obras</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+    <div class="container-home">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <a href="{% url 'home' %}" style="text-decoration: none; font-size: 24px;">🏠</a>
+            <h2 style="margin: 0;">Índice de Obras</h2>
+            <div style="width: 24px;"></div>
+        </div>
+
+        <div class="lista-recentes">
+            {% for obra in obras %}
+                <div class="item-recente" style="display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #28a745;">
+                    <div>
+                        <p><span class="label-azul">Obra:</span> <strong>{{ obra.Obra }}</strong></p>
+                        <p style="font-size: 14px; color: #666;">📦 {{ obra.total_itens }} materiais cadastrados</p>
+                    </div>
+                    
+                    <div style="text-align: right;">
+                        <p style="margin: 0; color: #28a745; font-weight: bold; font-size: 18px;">
+                            R$ {{ obra.valor_total_obra|floatformat:2 }}
+                        </p>
+                        <a href="{% url 'materiais cadastrados' %}?numero_obra={{ obra.Obra }}" 
+                           style="display: inline-block; margin-top: 8px; color: #007bff; text-decoration: none; font-size: 14px; font-weight: bold;">
+                           Ver Detalhes →
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="msg-vazio">Nenhuma obra encontrada no sistema.</p>
+            {% endfor %}
+        </div>
+        
+        <a href="{% url 'index' %}" class="link-consulta" style="margin-top: 20px; background-color: #6c757d;">
+            + Cadastrar em Nova Obra
+        </a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Produção</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <header style="width: 100%; background: #1a1d23; color: white; padding: 12px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+        <div style="max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+            <div style="font-size: 14px;">
+                <span style="opacity: 0.8;">Bem-vindo,</span> 
+                <strong style="color: #007bff;">{{ user.username|capfirst }}!</strong>
+            </div>
+
+            <form action="{% url 'logout' %}" method="post" style="margin: 0; border: none; box-shadow: none; background: transparent; padding: 0;">
+                {% csrf_token %}
+                <button type="submit" style="background: #dc3545; color: white; border: none; padding: 6px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;">
+                    Sair do Sistema
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <div class="container-home">
+        <h2>Dashboard de Produção</h2>
+
+        <form method="GET" action="{% url 'home' %}" class="dashboard-filter-form card-dashboard">
+            <div style="flex: 1;">
+                <label class="filter-label">Data Início:</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}" class="filter-input">
+            </div>
+            
+            <div style="flex: 1;">
+                <label class="filter-label">Data Fim:</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}" class="filter-input">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+    
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn-filtrar">Filtrar</button>
+                    <a href="{% url 'home' %}" class="btn-limpar">Limpar</a>
+                    
+                    <button type="submit" name="exportar" value="excel" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                        📥 Exportar Excel
+                    </button>
+
+                    
+                </div>
+            </div>
+        </form>
+        
+        <div class="summary-row">
+            <div class="card-total">
+                <small style="opacity: 0.9; font-size: 12px; display: block; margin-bottom: 5px;">Valor Total em Estoque (Geral)</small>
+                <h3 style="margin: 0; font-size: 1.4em;">R$ {{ valor_total|floatformat:2 }}</h3>
+            </div>
+                
+            <a href="{% url 'lista_obras' %}" class="card-link">📂 Visualizar Todas as Obras</a>
+            <a href="{% url 'index' %}" class="card-link">+ Nova Consulta de Obra</a>
+        </div>
+
+        <div class="card-dashboard">
+            <h4 class="chart-title">Investimento por Obra</h4>
+            <div style="height: 300px; margin-top: 15px;">
+                <canvas id="graficoObras"></canvas>
+            </div>
+        </div>
+
+        <script>
+            const ctx = document.getElementById('graficoObras').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {{ labels_grafico|safe }},
+                    datasets: [{
+                        label: 'Valor Acumulado (R$)',
+                        data: {{ valores_grafico|safe }},
+                        backgroundColor: '#007bff',
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        </script>
+      
+        <div class="lista-recentes">
+            <h3 style="color: #1a1d23; font-weight: 700; margin-bottom: 20px;">Últimos Materiais Adicionados</h3>
+            
+            {% for material in materiais %}
+                <div class="item-recente">
+                    <p><span class="label-azul">Código:</span> {{ material.Codigo }}</p>
+                    <p><span class="label-azul">Descrição:</span> {{ material.Descricao }}</p>
+                    
+                    <div class="item-details">
+                        <p>
+                            <strong>Qtd:</strong> {{ material.Quantidade }} | 
+                            <strong>Lote:</strong> {{ material.Lote }} | 
+                            <span class="price-unit">Unit: R$ {{ material.Preco_Unitario }}</span>
+                        </p>
+                        <p class="subtotal-row">
+                            <strong>Subtotal:</strong> <span>R$ {{ material.total_item|floatformat:2 }}</span>
+                        </p>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <p class="item-footer">
+                            Obra: <strong>{{ material.Obra }}</strong> | 📅 {{ material.data_criacao|date:"d/m/Y H:i" }}
+                        </p>
+                     
+                    </div>
+                </div>
+            {% empty %}
+                <p style="text-align: center; color: #999; padding: 20px;">Nenhum material encontrado.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acessar Obra</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+<body>
+    <div class="container-index">
+        <h2>Acessar Obra</h2>
+        
+        <form action="{% url 'materiais cadastrados' %}" method="GET">
+            <div class="input-group">
+                <label for="numero_obra">Número da Obra</label>
+                <input type="text" name="numero_obra" id="numero_obra" placeholder="Ex: 2026-001" required autofocus>
+            </div>
+            
+            
+            <button type="submit" class="btn-acessar">
+                Consultar Materiais
+            </button>
+        </form>
+
+        <a href="{% url 'home' %}" class="link-voltar">
+            ⬅ Voltar para o Dashboard
+        </a>
+    </div>
+</body>
+</html>

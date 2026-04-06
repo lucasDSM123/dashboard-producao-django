@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materiais Cadastrados</title>
+    
+    <link rel="stylesheet" href="{% static 'css/materiais.css' %}">
+</head>
+<div style="margin-bottom: 25px;">
+    <form method="GET" action="{% url 'materiais cadastrados' %}" id="search-form">
+        <input type="hidden" name="numero_obra" value="{{ numero_obra }}">
+        <div style="position: relative; display: flex; gap: 10px;">
+            <input type="text" 
+                   name="busca" 
+                   id="search-input"
+                   placeholder="🔍 Digite Descrição, Código ou Lote..." 
+                   value="{{ request.GET.busca }}"
+                   style="width: 100%; padding: 12px 15px; border: 2px solid #007bff; border-radius: 8px; font-size: 16px; outline: none;">
+            
+            <button type="submit" class="btn-submit" style="width: auto; padding: 0 25px; margin-top: 0;">
+                Filtrar
+            </button>
+        </div>
+    </form>
+    
+    {% if request.GET.busca %}
+        <p style="margin-top: 10px; font-size: 14px; color: #666;">
+            Mostrando resultados para: <strong>{{ request.GET.busca }}</strong> 
+            <a href="?numero_obra={{ numero_obra }}" style="color: #dc3545; margin-left: 10px; text-decoration: none;">(Limpar Filtro)</a>
+        </p>
+    {% endif %}
+</div>
+{% if messages %}
+<div style="max-width: 1100px; margin: 20px auto 0 auto; padding: 0 20px;">
+    {% for message in messages %}
+        <div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; 
+            {% if message.tags == 'success' %} background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
+            {% else %} background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; {% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <a href="{% url 'home' %}" style="text-decoration: none; color: #666; font-size: 20px;">🏠</a>
+            <h2 style="margin-bottom: 0;">Cadastro de Materiais</h2>
+            <div style="width: 24px;"></div> 
+        </div>
+
+        <div style="background-color: #e7f1ff; color: #007bff; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px solid #b3d7ff;">
+            <p>Obra: <strong>{{ numero_obra }}</strong></p>
+            <small>Total de itens nesta obra: {{ materiais.count }}</small>
+        </div>
+        <div style="margin-bottom: 20px; text-align: right;">
+                <a href="{% url 'exportar_excel' numero_obra %}" 
+                class="btn-submit" 
+                style="background-color: #28a745; text-decoration: none; padding: 10px 20px; display: inline-block; width: auto;">
+                📊 Exportar para Excel
+                </a>
+        </div>
+
+        <div class="form-section">
+            {% if mensagem_erro %}<div class="message error-message">{{ mensagem_erro }}</div>{% endif %}
+            {% if mensagem_sucesso %}<div class="message success-message">{{ mensagem_sucesso }}</div>{% endif %}
+
+            <form action="{% url 'materiais cadastrados' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="numero_obra" value="{{ numero_obra }}">
+                <input type="hidden" name="material_id" value="{{ material_editar.id|default:'' }}">
+
+                <div class="input-group">
+                    <label for="codigo">Código do Material</label>
+                    <input type="text" id="codigo" name="codigo" value="{{ material_editar.Codigo|default:'' }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="descricao">Descrição</label>
+                    <input type="text" id="descricao" name="descricao" value="{{ material_editar.Descricao|default:'' }}" required>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="quantidade">Quantidade</label>
+                        <input type="number" id="quantidade" name="quantidade" value="{{ material_editar.Quantidade|default:'' }}" required>
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label for="lote">Lote</label>
+                        <input type="number" step="0.01" id="lote" name="lote" value="{{ material_editar.Lote|default:''|stringformat:'.2f' }}" required>
+                    </div>
+                </div>
+
+                <button type="submit" style="background-color: {% if material_editar %}#ffc107{% else %}#007bff{% endif %}; color: {% if material_editar %}#000{% else %}#fff{% endif %};">
+                    {% if material_editar %}Confirmar Edição{% else %}Cadastrar Material{% endif %}
+                </button>
+                
+                {% if material_editar %}
+                    <a href="?numero_obra={{ numero_obra }}" style="display: block; text-align: center; margin-top: 10px; color: #666; font-size: 14px; text-decoration: none;">Cancelar Edição</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="materials-list">
+            <h3>Materiais da Obra</h3>
+            {% for material in materiais %}
+                <div class="material-item">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                        <span style="color: #888; font-size: 12px;">📅 {{ material.data_criacao|date:"d/m/Y H:i" }}</span>
+                        
+                        <div>
+                            <a href="?numero_obra={{ numero_obra }}&editar_id={{ material.id }}" 
+                               style="color: #007bff; text-decoration: none; font-weight: bold; margin-right: 15px;">
+                               ✏️ Editar
+                            </a>
+                            
+                            <a href="javascript:void(0)" 
+                            onclick="confirmarExclusao('{{ material.id }}', '{{ material.Descricao }}')" 
+                            style="color: #dc3545; text-decoration: none; font-weight: bold;">
+                            🗑️
+                            </a>
+                        </div>
+                    </div>
+                    <p><strong>Código:</strong> {{ material.Codigo }}</p>
+                    <p><strong>Descrição:</strong> {{ material.Descricao }}</p>
+                    <p><strong>Quantidade:</strong> {{ material.Quantidade }} | <strong>Lote:</strong> {{ material.Lote }}</p>
+                </div>
+            {% empty %}
+                <p style="text-align: center; color: #999;">Nenhum material cadastrado para esta obra.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        function confirmarExclusao(id, descricao) {
+            // Cria uma mensagem personalizada com o nome do material
+            const mensagem = `Tem certeza que deseja excluir o material: ${descricao}?`;
+            
+            if (confirm(mensagem)) {
+                // Redireciona para a URL de exclusão usando o ID
+                window.location.href = `/excluir_material/${id}/`;
+            }
+        }
+        // Opcional: Faz a busca disparar automaticamente após 1 segundo sem digitar
+        let timeout = null;
+        document.getElementById('search-input').addEventListener('keyup', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                // Opcional: submeter o form automaticamente se quiser busca viva
+                // document.getElementById('search-form').submit();
+            }, 1000);
+        });
+                // Mantenha sua função de filtrarMateriais aqui embaixo se você já tiver uma
+    </script>
+</body>
+</html>
