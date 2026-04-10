@@ -27,5 +27,5 @@ urlpatterns = [
     path('todas-as-obras/', views.lista_obras, name='lista_obras'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('editar/<int:pk>/', views.editar_material, name='editar_material'),
-    path('excluir/<int:pk>/', views.excluir_material, name='excluir_material'),
+    path('excluir_material/<int:material_id>/', views.excluir_material, name='excluir_material'),
 ]

@@ -35,12 +35,13 @@ def editar_material(request, pk):
     return render(request, 'materiais/editar.html', {'material': material})
 
 # VIEW PARA EXCLUIR
-def excluir_material(request, pk):
-    material = get_object_or_404(Material, pk=pk)
-    if request.method == "POST":
-        material.delete()
-    return redirect('home')
-
+def excluir_material(request, material_id): # Use material_id para bater com a URL
+    material = get_object_or_404(Material, id=material_id)
+    numero_obra = material.Obra # Salva o número da obra antes de deletar
+    material.delete()
+    messages.success(request, "Material excluído com sucesso!")
+    # Redireciona de volta para a obra correta
+    return redirect(f'/materiais-cadastrados/?numero_obra={numero_obra}')
 # 1. ESTA SERÁ A SUA NOVA PÁGINA PRINCIPAL (O BUSCADOR)
 def index(request):
     return render(request, 'materiais/index.html')
